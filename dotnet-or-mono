@@ -1,0 +1,12 @@
+#!/bin/sh
+command -v python2>/dev/null 2>&1 && \
+	exec python2 "$(dirname "$0")/dotnet-or-mono.py" "$@"
+command -v python3>/dev/null 2>&1 && \
+	exec python3 "$(dirname "$0")/dotnet-or-mono.py" "$@"
+command -v python>/dev/null 2>&1 && \
+	PYTHON_VERSION="$(python --version|cut -d' ' -f2)" || PYTHON_VERSION=''
+PYTHON_MAJOR_VERSION="$(echo "$PYTHON_VERSION"|cut -d. -f1)"
+test $PYTHON_MAJOR_VERSION -gt 2 && \
+	exec python "$(dirname "$0")/dotnet-or-mono.py" "$@"
+echo "dotnet-or-mono requires Python 2.7 or later" 1>&2
+exit 1
