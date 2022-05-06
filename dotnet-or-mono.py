@@ -28,14 +28,46 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 """
 
+class ReadableAssembly:
+    def __init__(self, filepath):
+        name = None
+        file = None
+        def check_format():
+            if file.read(2) != b'\x4D\x5A':
+                return False
+            return True
+        for suffix in [ '', '.exe', '.dll' ]:
+            try:
+                name = filepath + suffix
+                file = open(name, 'rb')
+                if check_format():
+                    break
+            except:
+                pass
+            if file is not None:
+                file.close()
+                file = None
+        if file is None:
+            raise argparse.ArgumentTypeError(
+                filepath + ', ' + filepath + '.exe, and ' + filepath + '.dll are not readable .NET assemblies.'
+            )
+        self.name = name
+        self.file = file
+    def fileno(self):
+        if self.file:
+            return self.file.fileno()
+        raise IOError()
+    def close(self):
+        if self.file:
+            self.file.close()
+
+
 
 ''' Generally extracts the framework type of an assembly by file path '''
 class AssemblyFrameworkType:
-    def __init__(self, filepath):
-        file = None
+    def __init__(self, file):
         mapped = None
         try:
-            file = open(filepath, 'rb')
             mapped = mmap.mmap(file.fileno(), 0, access=mmap.ACCESS_READ)
             self.internal_name = None
             self.version = None
@@ -196,13 +228,13 @@ if __name__ == "__main__":
     parser_run = subparsers.add_parser('run',
         help='run help')
     parser_run.set_defaults(command='run')
-    parser_run.add_argument("run_assembly", nargs=1,
+    parser_run.add_argument("run_assembly", type=ReadableAssembly, nargs=1,
         help="assembly to run")
     parser_run.add_argument("run_args", nargs="*",
         help="extra arguments passed to assembly",)
     parser_extract_assembly_framework = subparsers.add_parser('extract-assembly-framework', help='show help')
     parser_extract_assembly_framework.set_defaults(command='extract-assembly-framework')
-    parser_extract_assembly_framework.add_argument("assemblies_to_analyze", nargs='+', action="store",
+    parser_extract_assembly_framework.add_argument("assemblies_to_analyze", type=ReadableAssembly, nargs='+', action="store",
         help="assemblies to analyze")
     parser_extract_assembly_framework.add_argument("--parts", nargs='+',
         choices=['internal', 'type', 'version', 'attributes', 'display', 'all'],
@@ -232,7 +264,7 @@ if __name__ == "__main__":
     for assembly in args.assemblies_to_analyze:
         framework_type = AssemblyFrameworkType(assembly)
         if framework_type:
-            print('Assembly: ' + assembly)
+            print('Assembly: ' + assembly.name)
             if (('internal' in args.parts or 'all' in args.parts) and framework_type.internal_name is not None):
                 print('Framework Internal: ' + framework_type.get_internal_string())
             if (('type' in args.parts or 'all' in args.parts) and framework_type.internal_name is not None):
