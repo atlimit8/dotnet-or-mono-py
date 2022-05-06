@@ -1,6 +1,4 @@
 #!/bin/sh
-command -v python2>/dev/null 2>&1 && \
-	exec python2 "$(dirname "$0")/dotnet-or-mono.py" "$@"
 command -v python3>/dev/null 2>&1 && \
 	exec python3 "$(dirname "$0")/dotnet-or-mono.py" "$@"
 command -v python>/dev/null 2>&1 && \
