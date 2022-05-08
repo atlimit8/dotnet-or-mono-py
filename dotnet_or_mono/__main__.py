@@ -28,8 +28,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 """
 
 import subprocess
-from assemblies import *
-from versions import *
+from .assemblies import *
+from .versions import *
 
 try:  # Forced testing
     from shutil import which
@@ -80,15 +80,15 @@ def main(argv):
             print('dotnet: ' + dotnet_path)
         dotnet_version = get_dotnet_version()
         print('Dotnet Version: ' + ('.'.join(str(i) for i in dotnet_version) if dotnet_version else 'None'))
-        available_dotnetcore_runtime_version = get_available_dotnetcore_runtime_versions()
-        if available_dotnetcore_runtime_version:
+        available_dotnetcore_runtime_versions = get_available_dotnetcore_runtime_versions()
+        if available_dotnetcore_runtime_versions:
             print('Dotnet Runtimes:')
             for runtime in available_dotnetcore_runtime_versions:
                 print('    ' + runtime[0] + '\t' + '.'.join(runtime[1:]))
         available_dotnetcore_sdk_versions = get_available_dotnetcore_sdk_versions()
         if available_dotnetcore_sdk_versions:
             print('Dotnet SDKs:')
-            for sdk in available_dotnetcore_sdk_versions():
+            for sdk in available_dotnetcore_sdk_versions:
                 print('    ' + '.'.join(sdk))
     for assembly in args.assemblies_to_analyze:
         framework_type = AssemblyFrameworkType(assembly)

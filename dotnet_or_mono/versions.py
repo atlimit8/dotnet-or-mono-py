@@ -25,10 +25,21 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 """
 
+import subprocess
+import traceback
+
+def strip_line_tail(line):
+    line = line
+    if line[-1] == '\n':
+        line = line[:-1]
+    if line[-1] == '\r':
+        line = line[:-1]
+    return line
+
 '''gets the Mono version as a tuple or None'''
 def get_mono_version():
     try:
-        first_line = subprocess.Popen(['mono', '--version'], stdout=subprocess.PIPE).stdout.readline().replace("\n", '').replace("\r", '')
+        first_line = strip_line_tail(subprocess.Popen(['mono', '--version'], stdout=subprocess.PIPE).stdout.readline().decode('utf-8'))
         start = first_line.find('ersion ')
         if start == -1:
             return None
@@ -36,15 +47,17 @@ def get_mono_version():
         end = first_line.find(' ', start)
         return tuple(int(i) for i in (first_line[start:len(first_line)] if end == -1 else first_line[start:end]).split('.'))
     except:
+        traceback.print_exc()
         return None
 
 '''gets the Dotnet version as a tuple or None'''
 def get_dotnet_version():
     try:
         line_pipe = subprocess.Popen(['dotnet', '--version'], stdout=subprocess.PIPE).stdout
-        first_line = line_pipe.readline().replace('\n', '').replace('\r', '')
+        first_line = strip_line_tail(str(line_pipe.readline().decode('utf-8')))
         return tuple(int(i) for i in first_line.split('.'))
     except:
+        traceback.print_exc()
         return None
 
 '''gets the available .NET Core runtime versions as a list of tuples or None'''
@@ -54,10 +67,11 @@ def get_available_dotnetcore_runtime_versions():
         line_pipe = process.stdout
         runtimes = []
         for line in line_pipe:
-            parts = line.replace("\n", '').replace("\r", '').split(' ')
+            parts = strip_line_tail(line.decode('utf-8')).split(' ')
             runtimes.append(tuple([ parts[0] ] + parts[1].split('.')))
         return runtimes
     except:
+        traceback.print_exc()
         return None
 
 '''gets the available .NET Core SDK versions as a list of tuples or None'''
@@ -67,8 +81,9 @@ def get_available_dotnetcore_sdk_versions():
         line_pipe = process.stdout
         runtimes = []
         for line in line_pipe:
-            parts = line.replace("\n", '').replace("\r", '').split(' ')
+            parts = strip_line_tail(line.decode('utf-8')).split(' ')
             runtimes.append(tuple(parts[0].split('.')))
         return runtimes
     except:
+        traceback.print_exc()
         return None
