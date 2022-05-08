@@ -80,12 +80,16 @@ def main(argv):
             print('dotnet: ' + dotnet_path)
         dotnet_version = get_dotnet_version()
         print('Dotnet Version: ' + ('.'.join(str(i) for i in dotnet_version) if dotnet_version else 'None'))
-        print('Dotnet Runtimes:')
-        for runtime in get_available_dotnetcore_runtime_versions():
-            print('    ' + runtime[0] + '\t' + '.'.join(runtime[1:]))
-        print('Dotnet SDKs:')
-        for sdk in get_available_dotnetcore_sdk_versions():
-            print('    ' + '.'.join(sdk))
+        available_dotnetcore_runtime_version = get_available_dotnetcore_runtime_versions()
+        if available_dotnetcore_runtime_version:
+            print('Dotnet Runtimes:')
+            for runtime in available_dotnetcore_runtime_versions:
+                print('    ' + runtime[0] + '\t' + '.'.join(runtime[1:]))
+        available_dotnetcore_sdk_versions = get_available_dotnetcore_sdk_versions()
+        if available_dotnetcore_sdk_versions:
+            print('Dotnet SDKs:')
+            for sdk in available_dotnetcore_sdk_versions():
+                print('    ' + '.'.join(sdk))
     for assembly in args.assemblies_to_analyze:
         framework_type = AssemblyFrameworkType(assembly)
         if framework_type:
